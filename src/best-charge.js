@@ -115,13 +115,10 @@ buildPromotionInfo=(orderList)=>{
     saveMoney: 0
   }
   let foodList = buildFoodList(orderList)
-  console.log("-----------------------------")
-  console.log(foodList)
   promotionInfo.halfFoodList = buildHalfPriceList(foodList)
-  console.log(promotionInfo.halfFoodList)
   let HalfpricePromotionTotalMoney = countHalfpricePromotionTotalMoney(promotionInfo.halfFoodList)
   let OriginalPrice = countOriginalPrice(foodList)
-  if(HalfpricePromotionTotalMoney > 6 || (HalfpricePromotionTotalMoney<6 && OriginalPrice < 30)) {
+  if(HalfpricePromotionTotalMoney > 6 || (HalfpricePromotionTotalMoney>0 && OriginalPrice < 30)) {
     promotionInfo.type = '指定菜品半价'
     promotionInfo.saveMoney = HalfpricePromotionTotalMoney
   } 
@@ -132,23 +129,22 @@ buildPromotionInfo=(orderList)=>{
   return promotionInfo
 }
 
-//计算总计
-countTotalMoney=()=>{
-  
-}
-
 //生成输出优惠的字符串
 outputPromotionString=(promotionInfo)=>{
+  let totalString = ''
   let promotionString = ''
   if(promotionInfo.type==='指定菜品半价') {
     let foodNameString = promotionInfo.halfFoodList.map(item=>item.foodItemInfo.name).join('，')
     promotionString = `${promotionInfo.type}(${foodNameString})，省${promotionInfo.saveMoney}元`
-  } else if (promotionInfo.type==='满30减6元'){
-    promotionString = `满30减6元，省6元`
-  }
-  let totalString = `使用优惠:
+    totalString = `\n使用优惠:
 ${promotionString}
 -----------------------------------`
+  } else if (promotionInfo.type==='满30减6元'){
+    promotionString = `满30减6元，省6元`
+    totalString = `\n使用优惠:
+${promotionString}
+-----------------------------------`
+  }
   return totalString
 }
 //输出订单信息
@@ -157,16 +153,14 @@ bestCharge=(orderList)=> {
   let foodList = buildFoodList(orderList)
   let PromotionInfo = buildPromotionInfo(orderList)
   let promotionString = outputPromotionString(PromotionInfo)
+  let TotalMoney = countOriginalPrice(foodList) - PromotionInfo.saveMoney
   for (let item of foodList) {
     foodListString += `\n${item.foodItemInfo.name} x ${item.foodNum} = ${item.subPrice}元`
   }
-  
-  
   let orderInfo = `
 ============= 订餐明细 =============${foodListString}
------------------------------------
-${promotionString}
-总计：25元
+-----------------------------------${promotionString}
+总计：${TotalMoney}元
 ===================================`
   return orderInfo;
 }
